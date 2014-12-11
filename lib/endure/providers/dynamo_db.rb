@@ -25,7 +25,7 @@ module Endure::Providers
     end
 
     def get(key)
-      @client.get_item(table_name: 'bdq_orders', key: { key: key }).item['value']
+      @client.get_item(table_name: @collection, key: { key: key }).item['value']
     end
 
     def query
