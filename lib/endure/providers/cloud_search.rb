@@ -20,25 +20,43 @@ module Endure::Providers
       index_client.upload_documents documents: documents.to_json, content_type: 'application/json'
     end
 
-    def query(criteria)
-      structure = '(and '
+    def query(criteria, sort)
+      if criteria.empty?
+        # no criteria, so we presume we just wanna get the latest (sorted) records
+        #
+        structure = 'matchall'
+      else
+        structure = '(and '
 
-      criteria.each do |field, value|
-        structure << "(term field=#{field} '#{value}') "
+        criteria.each do |field, value|
+          structure << "(term field=#{field} '#{value}') "
+        end
+
+        structure << ')'
       end
 
-      structure << ')'
-
-      hits = []
-      query_client.search(
+      search_opts = {
           query: structure,
-          query_parser: "structured"
-      ).each_page do |page|
-        hits << page.hits
+          query_parser: 'structured'
+      }
+
+      unless sort.empty?
+        search_opts[:sort] = sort.to_a.join(' ')
+      end
+
+      result = Endure::QueryResult.new
+
+      query_client.search(search_opts).each_page do |page|
+        result.matching = page.hits.found
+        result.returned = page.hits.hit.count
+
+        page.hits.hit.each do |hit|
+          result.documents << hit.fields.map { |k,v| {k.to_sym => v.first} }.reduce(:merge)
+        end
       end
 
       #TODO: return a proper dataset here
-      hits
+      result
     end
 
     private

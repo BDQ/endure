@@ -11,10 +11,20 @@ module Endure::Providers
       subject.set('abc', 'somevalue')
     end
 
-    it 'should get key/value' do
+    it 'should get single key/value' do
       subject.set('abc', 'somevalue')
       document = subject.get('abc')
       expect(document).to eq 'somevalue'
+    end
+
+    it 'should get many key/values' do
+      subject.set('abc', 'somevalue')
+      subject.set('def', 'someothervalue')
+
+      documents = subject.multi_get(['abc', 'def'])
+
+      expect(documents.size).to eq 2
+      expect(documents.sort).to eq %w{someothervalue somevalue}
     end
 
     it 'query should not be implemented' do

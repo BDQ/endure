@@ -28,6 +28,16 @@ module Endure::Providers
       @client.get_item(table_name: @collection, key: { key: key }).item['value']
     end
 
+    def multi_get(keys)
+      @client.batch_get_item(
+        request_items: {
+          @collection.to_s => {
+            keys: keys.map { |k| { key: k } }
+          }
+        }
+      ).responses[@collection].map { |doc| doc['value'] }
+    end
+
     def query
       raise NotImplementedError, 'DynamoDB does not support querying'
     end
