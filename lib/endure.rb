@@ -5,6 +5,7 @@ class Endure
     autoload :DynamoDB,        'endure/providers/dynamo_db'
     autoload :CloudSearch,     'endure/providers/cloud_search'
     autoload :Sequel,          'endure/providers/sequel'
+    autoload :Hash,            'endure/providers/hash'
   end
 
   attr_accessor :store, :search
