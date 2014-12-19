@@ -16,12 +16,6 @@ module Endure::Providers
 
     def set(key, value)
       @client.put_item(table_name: @collection, item: { key: key, created_at: (Time.now.to_f * 1000).to_i,  value: value })
-    rescue Aws::DynamoDB::Errors::ResourceNotFoundException
-      create_table(@collection)
-
-      #todo: check table is actually created
-      sleep 10
-      retry
     end
 
     def get(key)
@@ -40,21 +34,6 @@ module Endure::Providers
 
     def query
       raise NotImplementedError, 'DynamoDB does not support querying'
-    end
-
-    private
-
-    def create_table(table_name)
-      @client.create_table(
-        table_name: table_name,
-        attribute_definitions: [
-          { attribute_name: 'key', attribute_type: 'S' }
-        ],
-        key_schema: [
-          { attribute_name: 'key', key_type: 'HASH' }
-        ],
-        provisioned_throughput: {read_capacity_units: 1, write_capacity_units: 1}
-      )
     end
   end
 end
