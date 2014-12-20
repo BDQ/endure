@@ -4,9 +4,7 @@ module Endure::Providers
   class DynamoDB
     def initialize(config)
       @collection = config[:collection]
-      @hash_key = config[:hash_key] || 'key'
-      @range_key = config[:range_key] || 'sequence'
-      @value_attribute = config[:value_attribute] || 'value'
+      @hash_key_attribute = config[:hash_key_attribute]
 
       Aws.config[:dynamodb] = { region: config['region'] || 'us-east-1' }
 
@@ -19,13 +17,24 @@ module Endure::Providers
     end
 
     def set(key, value)
+      if @hash_key_attribute
+        item_hash = {
+          @hash_key_attribute => value[@hash_key_attribute.to_sym],
+          object_id: key,
+          object_value: value,
+          updated_at: Time.now.to_i
+        }
+      else
+        item_hash = {
+          object_key: key,
+          object_value: value,
+          updated_at: Time.now.to_i
+        }
+      end
+
       @client.put_item(
         table_name: @collection,
-        item: {
-          @hash_key => key,
-          @range_key => Time.now.utc.to_s,
-          @value_attribute => value
-        }
+        item: item_hash
       )
     end
 
