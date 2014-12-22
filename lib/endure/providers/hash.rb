@@ -14,7 +14,7 @@ module Endure::Providers
     end
 
     # ---------- Search -----------
-    def index(key, document)
+    def index(key, value, terms)
       # TODO
     end
 

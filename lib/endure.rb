@@ -10,18 +10,16 @@ class Endure
 
   attr_accessor :store, :search
 
-  def set(key, value, summary)
-    #add to k/y
+  def set(key, value)
     @store.set(key, value)
-
-    # add to search service for indexing
-    if summary
-      @search.index(key, summary)
-    end
   end
 
   def get(key)
     @store.get(key)
+  end
+
+  def index(key, value, terms)
+    @search.index(key, value, terms)
   end
 
   def query(criteria, sort={})

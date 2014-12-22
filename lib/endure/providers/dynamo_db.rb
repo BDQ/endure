@@ -17,24 +17,10 @@ module Endure::Providers
     end
 
     def set(key, value)
-      if @hash_key_attribute
-        item_hash = {
-          @hash_key_attribute => value[@hash_key_attribute.to_sym],
-          object_id: key,
-          object_value: value,
-          updated_at: Time.now.to_i
-        }
-      else
-        item_hash = {
-          object_key: key,
-          object_value: value,
-          updated_at: Time.now.to_i
-        }
-      end
 
       @client.put_item(
         table_name: @collection,
-        item: item_hash
+        item: pop_item_hash(key, value)
       )
     end
 
@@ -52,8 +38,37 @@ module Endure::Providers
       ).responses[@collection].map { |doc| doc['value'] }
     end
 
+    def index(key, value, terms)
+
+      item_hash = pop_item_hash(key, value)
+      item_hash.merge! terms
+
+      @client.put_item(
+        table_name: @collection,
+        item: item_hash
+      )
+    end
+
     def query
       raise NotImplementedError, 'DynamoDB does not support querying'
+    end
+
+    private
+    def pop_item_hash(key, value)
+      if @hash_key_attribute
+        item_hash = {
+          @hash_key_attribute => value[@hash_key_attribute.to_sym],
+          object_id: key,
+          object_value: value,
+          updated_at: Time.now.to_i
+        }
+      else
+        item_hash = {
+          object_key: key,
+          object_value: value,
+          updated_at: Time.now.to_i
+        }
+      end
     end
   end
 end
